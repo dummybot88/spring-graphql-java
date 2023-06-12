@@ -8,4 +8,13 @@ type Author {
     books: [Book]
 }
 
+extend type Query {
+    authors: [Author]
+    authorById(id: ID!): Author
+}
+
+extend type Mutation{
+    addAuthor(authorInput: AuthorInput!): Author
+}
+
 

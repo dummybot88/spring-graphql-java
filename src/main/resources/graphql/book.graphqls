@@ -9,3 +9,13 @@ input BookInput{
     publisher: String
     authorId: ID!
 }
+
+extend type Query {
+    allBooks: [Book]
+    bookById(id: ID!): Book
+}
+
+extend type Mutation{
+    addBook(bookInput: BookInput!): Book
+    addBooks(books: [BookInput!]!): [Book]
+}
