@@ -359,7 +359,7 @@ in the background, the GraphQL runtime engine will perform the below steps:
 
 Now, the possibility is `Authors` and `Books` may belong to different databases or microservices resulting in 1 + N network calls.
 
-![](/Users/kadiums1/work/spring-graphql-java/Nplus1graphQL.png)
+![alt text](/Users/kadiums1/work/spring-graphql-java/Nplus1graphQL.png)
 
 If we look at the service logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to author.
 ```shell
