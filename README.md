@@ -1,5 +1,10 @@
 # Sample GraphQL Spring Boot Java 11 Application
-### GraphQL schema
+
+A Spring Jave 11 GraphQL example to understand the core concepts of GraphQL and solve N + 1 problem.
+
+### Getting Started
+
+#### GraphQL schema
 ###### author.graphqls
 ```graphql
 type Query {
@@ -30,7 +35,7 @@ type Book {
     publisher: String
 }
 ```
-###GraphQL queries
+####GraphQL queries
 ###### Retrieve all authors
 * Query
     ```graphql
@@ -209,7 +214,7 @@ type Book {
   ```
 
 
-### Mutations 
+#### Mutations 
 ###### Add an author
 * Mutation Query
   ```graphql
@@ -292,15 +297,107 @@ type Book {
     }
   }
   ```
+#### Solving N + 1 
+###### What is N + 1 problem?
+```markdown
+N + 1 problem means that the GraphQL server executes many unnecessary round trips to fetch nested data.
+```
+Before we discuss the solution, let's take a look at the problem with one of our GraphQL schemas
+```graphql
+type Query {
+    authors: [Author]
+}
 
-### Reference Documentation
+type Author {
+    id: ID!
+    name: String!
+    books: [Book]
+}
+
+type Book {
+  id: ID!
+  title: String!
+  publisher: String
+}
+```
+and on the service side, it is implemented as:
+```java
+@QueryMapping
+public Iterable<Author> authors() {
+    log.info("Fetching all authors..");
+    return authorRepository.findAll();
+}
+
+@SchemaMapping
+public List<Book> books(Author author){
+    log.info("Fetching books written by author {} ", author.getName());
+    return bookService.getBooksByAuthor(author);
+}
+```
+In the above code, Two `Data Fetcher`'s were defined:
+1. `authors()` for field authors of the GraphQL object type `Author`
+2. `books(..)` for field books of the type `Book`
+
+In general, whenever the GraphQL service executes a query, it calls a Data Fetcher for every `field`.
+
+Let's invoke a GraphQL request with this setup to fetch the following data:
+```graphql
+query {
+    authors {
+        name
+        books {
+            title
+        }
+    }
+}
+```
+
+in the background, the GraphQL runtime engine will perform the below steps:
+1. Parse the request and validates it against the schema.
+2. Then calls the `author` Data Fetcher (handler method `authors()`) to fetch the author information once.
+3. And, then calls the `books` Data Fetcher for each book.
+
+Now, the possibility is `Authors` and `Books` may belong to different databases or microservices resulting in 1 + N network calls.
+
+![](/Users/kadiums1/work/spring-graphql-java/Nplus1graphQL.png)
+
+If we look at the service logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to author.
+```shell
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching all authors..
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Steve 
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Stephen 
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Mark 
+```
+In Spring for GraphQL, this problem can be solved using `@BatchMapping` annotation. 
+
+Let's modify the `books(..)` handler that takes `List<Author>` and returns a `Map` of `Author` and `List<Book>`
+
+```java
+@BatchMapping
+public Map<Author, List<Book>> books(List<Author> authors){
+    log.info("Fetching books written by authors {} ", authors);
+    return bookService.getBooksByAuthors(authors);
+}
+```
+
+> `@Batchmapping` batches the call to the `book` Data Fetcher.
+
+If we now run the abover query, it can be observed that the GraphQL engine batches the call to the `books` field.
+
+```shell
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching all authors..
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by authors [com.dummybot.graphql.repositories.Author@16e3d7f4, com.dummybot.graphql.repositories.Author@26228ce9, com.dummybot.graphql.repositories.Author@45108db7] 
+```
+
+
+#### Reference Documentation
 For further reference, please consider the following sections:
 
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.7.12/maven-plugin/reference/html/)
 * [Spring for GraphQL](https://docs.spring.io/spring-boot/docs/2.7.12/reference/html/web.html#web.graphql)
 * [Spring Data JPA](https://docs.spring.io/spring-boot/docs/2.7.12/reference/htmlsingle/#data.sql.jpa-and-spring-data)
 
-### Guides
+#### Guides
 The following guides illustrate how to use some features concretely:
 
 * [Building a GraphQL service](https://spring.io/guides/gs/graphql-server/)

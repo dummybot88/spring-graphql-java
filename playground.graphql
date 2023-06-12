@@ -4,15 +4,11 @@
 #    }
 #}
 
-mutation {
-    addBooks(
-        books: [
-            {title: "The Abominable Bride", publisher: "HBO", authorId: 3}
-            {title: "The Lying Detective", publisher: "HBO", authorId: 1}
-            {title: "The Final Problem", publisher: "HBO", authorId: 1}
-        ]){
-        id
-        title
-        publisher
+query {
+    authors {
+        name
+        books {
+            title
+        }
     }
 }
