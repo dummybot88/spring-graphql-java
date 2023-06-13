@@ -16,7 +16,7 @@ A schema describes the shape of available data. This schema defines a `type` hie
 
 The schema also specifies which `queries` and `mutations` are available for clients to execute.
 
-######Graphql type catergories:
+###### Graphql type catergories:
 * **Scalar types** - `Int`, `Float`, `String`, `Boolean`, `ID`
 
 
