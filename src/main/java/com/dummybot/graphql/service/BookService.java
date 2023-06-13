@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,14 +25,10 @@ public class BookService {
         return bookRepository.findByAuthorId(author.getId());
     }
 
-    public Map<Author, List<Book>> getBooksByAuthors(List<Author> authors){
-        return authors.stream()
-                .collect(
-                        Collectors.toMap(
-                                Function.identity(),
-                                author -> bookRepository.findByAuthorId(author.getId())
-                        )
-                );
+    public Map<Author, List<Book>> getBooksByAuthorIds(List<Author> authors){
+        List<Long> authorIds = authors.stream().map(Author::getId).collect(Collectors.toList());
+        List<Book> books = bookRepository.findAllByAuthorIdIn(authorIds);
+        return books.stream().collect(Collectors.groupingBy(Book::getAuthor));
     }
 
     public Optional<Book> bookById(Long id) {

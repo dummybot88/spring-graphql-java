@@ -30,7 +30,7 @@ public class DummyBotGraphQlController {
         return authorService.allAuthors();
     }
 
- /*   @SchemaMapping
+   /*@SchemaMapping
     public List<Book> books(Author author){
         log.info("Fetching books written by author {} ", author.getName());
         return bookService.getBooksByAuthor(author);
@@ -39,7 +39,7 @@ public class DummyBotGraphQlController {
     @BatchMapping
     public Map<Author, List<Book>> books(List<Author> authors){
         log.info("Fetching books written by authors {} ", authors);
-        return bookService.getBooksByAuthors(authors);
+        return bookService.getBooksByAuthorIds(authors);
     }
 
     @QueryMapping

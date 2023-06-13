@@ -400,12 +400,16 @@ Now, the possibility is `Authors` and `Books` may belong to different databases 
 
 ![](./N1graphQL.png)
 
-If we look at the service logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to author.
+If we look at the sql logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to author.
 ```shell
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching all authors..
+[nio-8080-exec-1] org.hibernate.SQL                        : select author0_.id as id1_0_, author0_.name as name2_0_ from author author0_
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Steve 
+[nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id=?
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Stephen 
+[nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id=?
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Mark 
+[nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id=?
 ```
 In Spring for GraphQL, this problem can be solved using `@BatchMapping` annotation. 
 
@@ -415,7 +419,7 @@ Let's modify the `books(..)` handler that takes `List<Author>` and returns a `Ma
 @BatchMapping
 public Map<Author, List<Book>> books(List<Author> authors){
     log.info("Fetching books written by authors {} ", authors);
-    return bookService.getBooksByAuthors(authors);
+    return bookService.getBooksByAuthorIds(authors);
 }
 ```
 
@@ -425,7 +429,9 @@ If we now run the abover query, it can be observed that the GraphQL engine batch
 
 ```shell
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching all authors..
-[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by authors [com.dummybot.graphql.repositories.Author@16e3d7f4, com.dummybot.graphql.repositories.Author@26228ce9, com.dummybot.graphql.repositories.Author@45108db7] 
+[nio-8080-exec-1] org.hibernate.SQL                        : select author0_.id as id1_0_, author0_.name as name2_0_ from author author0_
+[nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by authors [com.dummybot.graphql.repositories.Author@64b1b13d, com.dummybot.graphql.repositories.Author@62e13b4f, com.dummybot.graphql.repositories.Author@40fe43e5] 
+[nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id in (? , ? , ?)
 ```
 
 
