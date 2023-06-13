@@ -6,6 +6,7 @@ import com.dummybot.graphql.repositories.Author;
 import com.dummybot.graphql.repositories.Book;
 import com.dummybot.graphql.service.AuthorService;
 import com.dummybot.graphql.service.BookService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -17,15 +18,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
+@RequiredArgsConstructor
 public class DummyBotGraphQlController {
 
     private final AuthorService authorService;
     private final BookService bookService;
-
-    public DummyBotGraphQlController(AuthorService authorService, BookService bookService) {
-        this.authorService = authorService;
-        this.bookService = bookService;
-    }
 
     @QueryMapping
     public Iterable<Author> authors() {
@@ -46,7 +43,7 @@ public class DummyBotGraphQlController {
     }
 
     @QueryMapping
-    public Optional<Author> authorById(@Argument Long id) {
+    public Author authorById(@Argument Long id) {
         return authorService.authorById(id);
     }
 

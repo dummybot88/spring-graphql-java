@@ -4,7 +4,46 @@ A Spring Jave 11 GraphQL example to understand the core concepts of GraphQL and 
 
 ### Getting Started
 
+#### GraphQL
+A query language for reading and mutating data in APIs. It provides a type system to describe a schema for the data enabling the client to specify the exact data they need from the API. 
+
+As a result, GraphQL provides a single entrypoint, which allows clients to get the necessary data, instead of multiple endpoints in the case of a REST API.
+
+![](./restVsGraphQL.png)
+
 #### GraphQL schema
+A schema describes the shape of available data. This schema defines a `type` hierarchy with `fields` that are populated by back-end data stores. 
+
+The schema also specifies which `queries` and `mutations` are available for clients to execute.
+
+######Graphql type catergories:
+* **Scalar types** - `Int`, `Float`, `String`, `Boolean`, `ID`
+
+
+* **Object types** - An object type contains a collection of `fields`, each of which has its own type. It includes root operation types - `Query`, `Mutation` and `Subscription`.
+
+
+* **Query types** - Defines entry points for `read` operations.
+
+
+* **Mutation types** - Defines entry points for `write` operations.
+
+
+* **Subscription types** - Used for notifying users of any changes.
+
+
+* **Input types** - An object type that allows user to provide data as arguments to fields.
+
+
+* **Enum types** - Defines a prescribed list of options for the user to pick from (similar to Java Enum).
+
+
+* **Union types** - Enables a schema field to return one of multiple object types.
+
+
+* **Interface types** - Specifies a set of fields that multiple object types can include.
+
+#### Example Schemas
 ###### author.graphqls
 ```graphql
 type Query {
@@ -396,6 +435,7 @@ For further reference, please consider the following sections:
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.7.12/maven-plugin/reference/html/)
 * [Spring for GraphQL](https://docs.spring.io/spring-boot/docs/2.7.12/reference/html/web.html#web.graphql)
 * [Spring Data JPA](https://docs.spring.io/spring-boot/docs/2.7.12/reference/htmlsingle/#data.sql.jpa-and-spring-data)
+* [GraphQL Vulnerabilities](https://0xn3va.gitbook.io/cheat-sheets/web-application/graphql-vulnerabilities)
 
 #### Guides
 The following guides illustrate how to use some features concretely:

@@ -3,6 +3,7 @@ package com.dummybot.graphql.service;
 import com.dummybot.graphql.repositories.Author;
 import com.dummybot.graphql.repositories.Book;
 import com.dummybot.graphql.repositories.BookRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,13 +13,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
-    private BookRepository bookRepository;
-
-    public BookService(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
+    private final BookRepository bookRepository;
 
     public Iterable<Book> books() {
         return bookRepository.findAll();

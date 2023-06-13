@@ -3,25 +3,27 @@ package com.dummybot.graphql.service;
 import com.dummybot.graphql.model.BookInput;
 import com.dummybot.graphql.repositories.Author;
 import com.dummybot.graphql.repositories.AuthorRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthorService {
 
-    private AuthorRepository authorRepository;
-
-    public AuthorService(AuthorRepository authorRepository) {
-        this.authorRepository = authorRepository;
-    }
+    private final AuthorRepository authorRepository;
 
     public Iterable<Author> allAuthors(){
         return authorRepository.findAll();
     }
 
-    public Optional<Author> authorById(Long id) {
-        return authorRepository.findById(id);
+    public Author authorById(Long id) {
+        Optional<Author> author = authorRepository.findById(id);
+        if (author.isPresent()){
+            return author.get();
+        }
+        throw new IllegalArgumentException("No author found for the given id");
     }
 
     public Author addAuthor(Author author){
