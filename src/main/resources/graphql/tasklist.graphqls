@@ -1,0 +1,20 @@
+scalar Date
+
+type Tasklist{
+    id: ID!,
+    taskType: String!,
+    userKey: String!,
+    subject: String,
+    beginDate: Date,
+    dueDate: Date!,
+    assignedUser: String!
+}
+
+extend type Query {
+    allTasks: [Tasklist]
+    tasklistByAssignee(assignee: String!): [Tasklist]
+}
+
+extend type Mutation {
+    completeTask(id: ID!): [Tasklist]
+}

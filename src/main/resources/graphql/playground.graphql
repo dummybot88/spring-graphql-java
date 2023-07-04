@@ -5,10 +5,7 @@
 #}
 
 query {
-    authors {
-        name
-        books {
-            title
-        }
+    tasklistByAssignee(assignee: "Sravan Kadium"){
+        id
     }
 }

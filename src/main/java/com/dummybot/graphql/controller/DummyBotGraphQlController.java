@@ -4,10 +4,13 @@ import com.dummybot.graphql.model.AuthorInput;
 import com.dummybot.graphql.model.BookInput;
 import com.dummybot.graphql.repositories.Author;
 import com.dummybot.graphql.repositories.Book;
+import com.dummybot.graphql.repositories.Tasklist;
 import com.dummybot.graphql.service.AuthorService;
 import com.dummybot.graphql.service.BookService;
+import com.dummybot.graphql.service.TasklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
 
@@ -23,6 +26,7 @@ public class DummyBotGraphQlController {
 
     private final AuthorService authorService;
     private final BookService bookService;
+    private final TasklistService tasklistService;
 
     @QueryMapping
     public Iterable<Author> authors() {
@@ -74,5 +78,23 @@ public class DummyBotGraphQlController {
                 .map(bookInput ->
                         bookService.addBook(new Book(bookInput.getTitle(), bookInput.getPublisher(), authorService.getBookAuthor(bookInput))))
                 .collect(Collectors.toList());
+    }
+
+    @QueryMapping
+    public Iterable<Tasklist> allTasks() {
+        log.info("Fetching all tasklists..");
+        return tasklistService.getAllTaskLists();
+    }
+
+    @QueryMapping
+    public List<Tasklist> tasklistByAssignee(@Argument String assignee) {
+        log.info("Fetching all tasklists by assignee - "+ assignee);
+        return tasklistService.getTaskListByAssignee(assignee);
+    }
+
+    @MutationMapping
+    public List<Tasklist> completeTask(@Argument Long id) {
+        log.info("Completing the task with id - "+ id);
+        return tasklistService.completeTask(id);
     }
 }

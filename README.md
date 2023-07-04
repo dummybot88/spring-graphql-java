@@ -5,22 +5,29 @@ A Spring Jave 11 GraphQL example to understand the core concepts of GraphQL and 
 ### Getting Started
 
 #### GraphQL
-A query language for reading and mutating data in APIs. It provides a type system to describe a schema for the data enabling the client to specify the exact data they need from the API. 
 
-As a result, GraphQL provides a single entrypoint, which allows clients to get the necessary data, instead of multiple endpoints in the case of a REST API.
+A query language for reading and mutating data in APIs. It provides a type system to describe a schema for the data
+enabling the client to specify the exact data they need from the API.
+
+As a result, GraphQL provides a single entrypoint, which allows clients to get the necessary data, instead of multiple
+endpoints in the case of a REST API.
 
 ![](./restVsGraphQL.png)
 
 #### GraphQL schema
-A schema describes the shape of available data. This schema defines a `type` hierarchy with `fields` that are populated by back-end data stores. 
+
+A schema describes the shape of available data. This schema defines a `type` hierarchy with `fields` that are populated
+by back-end data stores.
 
 The schema also specifies which `queries` and `mutations` are available for clients to execute.
 
 ###### Graphql type catergories:
+
 * **Scalar types** - `Int`, `Float`, `String`, `Boolean`, `ID`
 
 
-* **Object types** - An object type contains a collection of `fields`, each of which has its own type. It includes root operation types - `Query`, `Mutation` and `Subscription`.
+* **Object types** - An object type contains a collection of `fields`, each of which has its own type. It includes root
+  operation types - `Query`, `Mutation` and `Subscription`.
 
 
 * **Query types** - Defines entry points for `read` operations.
@@ -44,7 +51,9 @@ The schema also specifies which `queries` and `mutations` are available for clie
 * **Interface types** - Specifies a set of fields that multiple object types can include.
 
 #### Example Schemas
+
 ###### author.graphqls
+
 ```graphql
 type Query {
     authors: [Author]
@@ -67,6 +76,7 @@ type Author {
 ```
 
 ###### book.graphqls
+
 ```graphql
 type Book {
     id: ID!
@@ -74,8 +84,11 @@ type Book {
     publisher: String
 }
 ```
+
 ####GraphQL queries
+
 ###### Retrieve all authors
+
 * Query
     ```graphql
     query{
@@ -147,7 +160,9 @@ type Book {
     }
   }
   ```
+
 ###### Retrieve author by ID
+
 * Query
   ```graphql
   query{
@@ -181,6 +196,7 @@ type Book {
   ```
 
 ###### Retrieve all books
+
 * Query
   ```graphql
   query{
@@ -230,7 +246,9 @@ type Book {
     }
   }
   ```
+
 ###### Retrieve book by ID
+
 * Query
   ```graphql
   query{
@@ -252,9 +270,10 @@ type Book {
   }
   ```
 
+#### Mutations
 
-#### Mutations 
 ###### Add an author
+
 * Mutation Query
   ```graphql
   mutation {
@@ -272,8 +291,9 @@ type Book {
     }
   }
   ```
-  
+
 ###### Add a book
+
 * Mutation Query
   ```graphql
   mutation {
@@ -296,7 +316,9 @@ type Book {
     }
   }
   ```
+
 ###### Add books
+
 * Mutation Query
   ```graphql
   mutation {
@@ -336,12 +358,17 @@ type Book {
     }
   }
   ```
-#### Solving N + 1 
+
+#### Solving N + 1
+
 ###### What is N + 1 problem?
+
 ```markdown
 N + 1 problem means that the GraphQL server executes many unnecessary round trips to fetch nested data.
 ```
+
 Before we discuss the solution, let's take a look at the problem with one of our GraphQL schemas
+
 ```graphql
 type Query {
     authors: [Author]
@@ -354,32 +381,37 @@ type Author {
 }
 
 type Book {
-  id: ID!
-  title: String!
-  publisher: String
+    id: ID!
+    title: String!
+    publisher: String
 }
 ```
+
 and on the service side, it is implemented as:
+
 ```java
 @QueryMapping
-public Iterable<Author> authors() {
-    log.info("Fetching all authors..");
-    return authorRepository.findAll();
-}
+public Iterable<Author> authors(){
+        log.info("Fetching all authors..");
+        return authorRepository.findAll();
+        }
 
 @SchemaMapping
 public List<Book> books(Author author){
-    log.info("Fetching books written by author {} ", author.getName());
-    return bookService.getBooksByAuthor(author);
-}
+        log.info("Fetching books written by author {} ",author.getName());
+        return bookService.getBooksByAuthor(author);
+        }
 ```
+
 In the above code, Two `Data Fetcher`'s were defined:
+
 1. `authors()` for field authors of the GraphQL object type `Author`
 2. `books(..)` for field books of the type `Book`
 
 In general, whenever the GraphQL service executes a query, it calls a Data Fetcher for every `field`.
 
 Let's invoke a GraphQL request with this setup to fetch the following data:
+
 ```graphql
 query {
     authors {
@@ -392,15 +424,19 @@ query {
 ```
 
 in the background, the GraphQL runtime engine will perform the below steps:
+
 1. Parse the request and validates it against the schema.
 2. Then calls the `author` Data Fetcher (handler method `authors()`) to fetch the author information once.
 3. And, then calls the `books` Data Fetcher for each book.
 
-Now, the possibility is `Authors` and `Books` may belong to different databases or microservices resulting in 1 + N network calls.
+Now, the possibility is `Authors` and `Books` may belong to different databases or microservices resulting in 1 + N
+network calls.
 
 ![](./N1graphQL.png)
 
-If we look at the sql logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to author.
+If we look at the sql logs, it can be observed that `books(..)` Data Fetcher is called sequentially for every call to
+author.
+
 ```shell
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching all authors..
 [nio-8080-exec-1] org.hibernate.SQL                        : select author0_.id as id1_0_, author0_.name as name2_0_ from author author0_
@@ -411,16 +447,17 @@ If we look at the sql logs, it can be observed that `books(..)` Data Fetcher is 
 [nio-8080-exec-1] c.d.g.c.DummyBotGraphQlController        : Fetching books written by author Mark 
 [nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id=?
 ```
-In Spring for GraphQL, this problem can be solved using `@BatchMapping` annotation. 
+
+In Spring for GraphQL, this problem can be solved using `@BatchMapping` annotation.
 
 Let's modify the `books(..)` handler that takes `List<Author>` and returns a `Map` of `Author` and `List<Book>`
 
 ```java
 @BatchMapping
-public Map<Author, List<Book>> books(List<Author> authors){
-    log.info("Fetching books written by authors {} ", authors);
-    return bookService.getBooksByAuthorIds(authors);
-}
+public Map<Author, List<Book>>books(List<Author> authors){
+        log.info("Fetching books written by authors {} ",authors);
+        return bookService.getBooksByAuthorIds(authors);
+        }
 ```
 
 > `@Batchmapping` batches the call to the `book` Data Fetcher.
@@ -434,8 +471,8 @@ If we now run the abover query, it can be observed that the GraphQL engine batch
 [nio-8080-exec-1] org.hibernate.SQL                        : select book0_.id as id1_1_, book0_.author_id as author_i4_1_, book0_.publisher as publishe2_1_, book0_.title as title3_1_ from book book0_ left outer join author author1_ on book0_.author_id=author1_.id where author1_.id in (? , ? , ?)
 ```
 
-
 #### Reference Documentation
+
 For further reference, please consider the following sections:
 
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.7.12/maven-plugin/reference/html/)
@@ -444,6 +481,7 @@ For further reference, please consider the following sections:
 * [GraphQL Vulnerabilities](https://0xn3va.gitbook.io/cheat-sheets/web-application/graphql-vulnerabilities)
 
 #### Guides
+
 The following guides illustrate how to use some features concretely:
 
 * [Building a GraphQL service](https://spring.io/guides/gs/graphql-server/)
