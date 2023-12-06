@@ -10,7 +10,7 @@ A query language for reading and mutating data in APIs. It provides a type syste
 enabling the client to specify the exact data they need from the API.
 
 As a result, GraphQL provides a single entrypoint, which allows clients to get the necessary data, instead of multiple
-endpoints in the case of a REST API.
+endpoints in the case of a REST API
 
 ![](./restVsGraphQL.png)
 
